@@ -70,18 +70,22 @@ See `examples/basic.rs` for a full AES-consistency check.
 ### White-box AES flow (mermaid)
 ```mermaid
 flowchart LR
-    P[Plaintext (32B)] --> F0[External input encoding F^(0)]
-    F0 --> R1[Round 1: 32 tables (T_i^(1))]
-    R1 --> R2[Round 2]
-    R2 --> R3[Round 3]
-    R3 --> R4[Round 4]
-    R4 --> R5[Round 5]
-    R5 --> R6[Round 6]
-    R6 --> R7[Round 7]
-    R7 --> R8[Round 8]
-    R8 --> R9[Round 9]
-    R9 --> R10[Round 10 (SR only, Mout folded)]
-    R10 --> OUT[Ciphertext (32B)]
+    P["Plaintext (32B)"]
+    F0["External input encoding F(0)"]
+    R1["Round 1: 32 tables"]
+    R2["Round 2"]
+    R3["Round 3"]
+    R4["Round 4"]
+    R5["Round 5"]
+    R6["Round 6"]
+    R7["Round 7"]
+    R8["Round 8"]
+    R9["Round 9"]
+    R10["Round 10 (SR only, Mout folded)"]
+    OUT["Ciphertext (32B)"]
+
+    P --> F0 --> R1 --> R2 --> R3 --> R4 --> R5 --> R6 --> R7 --> R8 --> R9 --> R10 --> OUT
+
     classDef tbl fill:#dfe7fd,stroke:#5c6bc0,stroke-width:1px,color:#1b1b1b;
     class R1,R2,R3,R4,R5,R6,R7,R8,R9,R10 tbl;
 ```
