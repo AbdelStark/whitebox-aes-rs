@@ -3,9 +3,11 @@
 use core::convert::TryInto;
 
 use rand::{CryptoRng, RngCore};
+use serde::{Deserialize, Serialize};
+use serde_big_array::BigArray;
 
 /// 8×8 binary matrix over GF(2), stored row-major with each row packed into a `u8`.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Matrix8 {
     rows: [u8; 8],
 }
@@ -111,8 +113,9 @@ impl Matrix8 {
 }
 
 /// 128×128 binary matrix over GF(2), stored row-major with two `u64` segments per row.
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Matrix128 {
+    #[serde(with = "BigArray")]
     rows: [[u64; 2]; 128],
 }
 
@@ -205,8 +208,9 @@ impl Matrix128 {
 }
 
 /// 256×256 binary matrix over GF(2), stored row-major, four `u64` segments per row.
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Matrix256 {
+    #[serde(with = "BigArray")]
     rows: [[u64; 4]; 256],
 }
 

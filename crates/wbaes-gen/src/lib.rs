@@ -9,9 +9,15 @@
 #![deny(missing_docs)]
 
 mod affine;
+mod generator;
+mod instance;
 mod linear;
 mod matrix;
+mod tables;
 
 pub use affine::{Affine256, Affine8};
-pub use linear::{mc_sr_matrix_128, mc_sr_matrix_256};
+pub use generator::{Generator, GeneratorConfig};
+pub use instance::{ExternalEncodings, InstanceParams, SchemeId, WbInstance256};
+pub use linear::{mc_sr_matrix_128, mc_sr_matrix_256, sr_matrix_128, sr_matrix_256};
 pub use matrix::{Matrix128, Matrix256, Matrix8};
+pub use tables::{RoundTables, Table16x256};

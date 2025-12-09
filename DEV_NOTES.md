@@ -30,3 +30,9 @@
 - Added Matrix128 type plus from-linear-transform helpers for 128/256; verified matrix application matches direct AES shift+mix on random states.
 - `wbaes-gen` now depends on `aes-core`; fmt/clippy/tests passing.
 - Next: white-box table generation pipeline, instance struct, and serialization (Phases 5–6).
+
+## 2025-12-09 12:09 UTC
+- Added table representations (`Table16x256`, `RoundTables`, random `HTable`) and full generator pipeline to build 10 rounds from AES keys, sparse encodings, and masking tables.
+- Implemented instance structs with parameters, external encodings, and bincode serialization; added serde support to affine/matrix types.
+- Generator produces instances with external output encoding folded into round 10; configuration flag controls external encodings (defaults off). Workspace fmt/clippy/tests pass.
+- Next: runtime evaluator and CLI for end-to-end encryption/decryption (Phases 7–8).

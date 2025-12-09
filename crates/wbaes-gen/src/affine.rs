@@ -1,11 +1,12 @@
 //! Affine encodings over GF(2).
 
 use rand::{CryptoRng, RngCore};
+use serde::{Deserialize, Serialize};
 
 use crate::matrix::{Matrix256, Matrix8};
 
 /// 8-bit affine map `x -> lin * x ⊕ bias`.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Affine8 {
     /// Linear component.
     pub lin: Matrix8,
@@ -52,7 +53,7 @@ impl Affine8 {
 }
 
 /// 256-bit affine map `x -> lin * x ⊕ bias`.
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Affine256 {
     /// Linear component.
     pub lin: Matrix256,

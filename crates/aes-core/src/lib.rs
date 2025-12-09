@@ -20,3 +20,4 @@ mod sbox;
 pub use crate::block::Block;
 pub use crate::cipher::{decrypt_block, encrypt_block, expand_key};
 pub use crate::key::{Aes128Key, RoundKeys};
+pub use crate::sbox::sbox;
