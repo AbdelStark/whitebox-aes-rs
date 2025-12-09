@@ -85,6 +85,12 @@ enum Commands {
         #[arg(long)]
         seed: Option<u64>,
     },
+    /// Run a local demo: generate key + instance, encrypt random data, decrypt back.
+    Demo {
+        /// Optional RNG seed for reproducibility.
+        #[arg(long)]
+        seed: Option<u64>,
+    },
 }
 
 fn main() -> Result<()> {
@@ -113,6 +119,7 @@ fn main() -> Result<()> {
             samples,
             seed,
         } => cmd_check(&instance, &key_hex, samples, seed),
+        Commands::Demo { seed } => cmd_demo(seed),
     }
 }
 
@@ -217,6 +224,51 @@ fn cmd_check(
     Ok(())
 }
 
+fn cmd_demo(seed: Option<u64>) -> Result<()> {
+    let mut rng = seeded_rng(seed);
+    let mut key_bytes = [0u8; 16];
+    rng.fill_bytes(&mut key_bytes);
+    let key = Aes128Key::from(key_bytes);
+
+    let gen_seed = derive_seed(&mut rng);
+    let mut gen = Generator::with_config(
+        ChaCha20Rng::from_seed(gen_seed),
+        GeneratorConfig {
+            external_encodings: false,
+        },
+    );
+    let instance = gen.generate_instance(&key);
+    let cipher = WbCipher256::new(instance);
+
+    let mut block = [0u8; 32];
+    rng.fill_bytes(&mut block);
+    let plaintext_hex = hex::encode(block);
+
+    let round_keys = expand_key(&key);
+    cipher.encrypt_block(&mut block);
+    let ciphertext_hex = hex::encode(block);
+
+    let mut decrypted = block;
+    let mut first = [0u8; 16];
+    let mut second = [0u8; 16];
+    first.copy_from_slice(&decrypted[..16]);
+    second.copy_from_slice(&decrypted[16..]);
+    let pt1 = decrypt_block(&first, &round_keys);
+    let pt2 = decrypt_block(&second, &round_keys);
+    decrypted[..16].copy_from_slice(&pt1);
+    decrypted[16..].copy_from_slice(&pt2);
+
+    let decrypted_hex = hex::encode(decrypted);
+    println!("demo key: {}", hex::encode(key_bytes));
+    println!("plaintext: {}", plaintext_hex);
+    println!("ciphertext: {}", ciphertext_hex);
+    println!("decrypted: {}", decrypted_hex);
+    if decrypted_hex != plaintext_hex {
+        bail!("demo roundtrip failed");
+    }
+    Ok(())
+}
+
 fn parse_key_hex(hex_str: &str) -> Result<Aes128Key> {
     let bytes = hex::decode(hex_str.trim()).context("decode key hex")?;
     if bytes.len() != 16 {
@@ -245,4 +297,10 @@ fn seeded_rng(seed: Option<u64>) -> impl RngCore + CryptoRng {
             ChaCha20Rng::from_seed(seed_bytes)
         }
     }
+}
+
+fn derive_seed(rng: &mut impl RngCore) -> [u8; 32] {
+    let mut seed_bytes = [0u8; 32];
+    rng.fill_bytes(&mut seed_bytes);
+    seed_bytes
 }

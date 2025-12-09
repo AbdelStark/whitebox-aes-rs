@@ -17,6 +17,9 @@ cargo run -p wbaes-cli -- gen \
   --out wb.bin
 
 cargo run -p wbaes-cli -- enc --instance wb.bin --in plain.bin --out ct.bin
+
+# Quick demo: generate random key/instance, encrypt random 32B block, and decrypt back
+cargo run -p wbaes-cli -- demo
 ```
 
 `dec` expects instances with no external output encoding (the default): it decrypts with AES-core. `check` compares white-box outputs against two AES encryptions for random samples.
