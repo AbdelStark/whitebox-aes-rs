@@ -1,0 +1,20 @@
+**/target
+.DS_Store
+.direnv
+.vscode/
+.idea/
+*.redb
+*.sqlite*
+config.toml
+.pre-commit-config.yaml
+result
+Cargo.lock
+.aider*
+**/postgres_data/
+**/.env
+.ai
+
+# Mutation testing artifacts
+mutants.out/
+mutants-*.log
+.mutants.lock
