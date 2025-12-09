@@ -10,7 +10,6 @@ Rust workspace implementing Baek–Cheon–Hong’s “White-Box AES Implementat
 - **Docs & tooling**: design/background docs, example, Criterion benches, CI (fmt/clippy/test).
 
 ## Repository layout
-- `.ai/plan.md` — binding implementation spec.
 - `crates/` — `aes-core`, `wbaes-gen`, `wbaes-runtime`, `wbaes-cli`.
 - `docs/` — `design.md` (mapping scheme→code), `whitebox_background.md` (threat model/context).
 - `examples/basic.rs` — minimal generation/encryption roundtrip.
@@ -65,7 +64,6 @@ cipher.encrypt_block(&mut block);
 See `examples/basic.rs` for a full AES-consistency check.
 
 ## Design & background
-- Roadmap/spec: `.ai/plan.md`
 - Implementation mapping and data flow: `docs/design.md`
 - Threat model and CEJO/Chow context: `docs/whitebox_background.md`
 
@@ -88,8 +86,3 @@ Key references:
   - `cargo clippy --all-targets --all-features --workspace -- -D warnings`
   - `cargo test --workspace`
   - `cargo bench` (Criterion; generation is heavyweight)
-
-## Roadmap
-- Optional parallel table generation feature.
-- CLI integration tests via `assert_cmd`.
-- Publish docs (`cargo doc`) / Pages once stabilized.
