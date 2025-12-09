@@ -6,3 +6,9 @@
 - Testing expectations: AES vectors and property tests in `aes-core`, matrix/encoding/table correctness and WB-vs-AES equivalence in `wbaes-gen`/`wbaes-runtime`, CLI smoke and serialization round-trips, benches later.
 - Security posture: research/educational only; CEJO/BGE/DCA class attacks apply; no side-channel hardening beyond reasonable constant-time structure.
 - Next: Phase 1 — set up workspace scaffolding and crate skeletons per the plan.
+
+## 2025-12-09 11:30 UTC
+- Created Cargo workspace with four crates (`aes-core`, `wbaes-gen`, `wbaes-runtime`, `wbaes-cli`) and added scaffold lib/main files with unsafe forbidden.
+- Added root README stub referencing `.ai/plan.md` and MSRV intent.
+- Ran `cargo fmt`, `cargo clippy --all-targets --all-features --workspace -- -D warnings`, and `cargo test --workspace` (all passing).
+- Next: implement AES-128 core (key schedule and encrypt) with NIST vectors and property tests.

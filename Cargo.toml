@@ -1,0 +1,13 @@
+[workspace]
+members = [
+    "crates/aes-core",
+    "crates/wbaes-gen",
+    "crates/wbaes-runtime",
+    "crates/wbaes-cli",
+]
+resolver = "2"
+
+[workspace.package]
+edition = "2021"
+license = "MIT OR Apache-2.0"
+
