@@ -67,6 +67,19 @@ See `examples/basic.rs` for a full AES-consistency check.
 - Implementation mapping and data flow: `docs/design.md`
 - Threat model and CEJO/Chow context: `docs/whitebox_background.md`
 
+<details>
+<summary><strong>What is white-box cryptography? (primer)</strong></summary>
+
+White-box cryptography studies how to implement a cipher when the attacker controls the execution environment (can read/modify code, tables, and intermediate values). Key ideas:
+
+- **CEJO/Chow framework (2002):** rewrite AES as key-dependent lookup tables (T-boxes, Ty tables), wrap each with random input/output encodings, add mixing bijections for diffusion, and optionally external encodings to hide plaintext/ciphertext domains.
+- **Threat model:** the adversary sees the implementation internals (white-box) rather than treating the cipher as a black box; the goal is to raise the effort to extract the key.
+- **Known attacks:** algebraic removal of encodings (BGE), CEJO affine-equivalence attacks, and practical side-channel/DCA attacks on software traces. Classic designs are breakable at modest cost.
+- **Revisited scheme (Baek–Cheon–Hong 2016):** increases state size to 256 bits (two AES blocks) and uses unsplit 256-bit affine encodings with a sparse banded structure; each round is the XOR of 32 per-byte tables with random masks. This raises generic attack cost but remains research/educational.
+- **Limitations:** not side-channel hardened; external encodings help modestly; all tables and keys should be treated as sensitive; use cases are primarily academic (evaluation, experimentation, benchmarking).
+
+</details>
+
 ### White-box AES flow (mermaid)
 ```mermaid
 flowchart LR
