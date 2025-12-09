@@ -6,6 +6,7 @@ license = "MIT OR Apache-2.0"
 description = "White-box AES instance generator implementing Baek–Cheon–Hong revisited scheme"
 
 [dependencies]
+aes-core = { path = "../aes-core" }
 rand = { version = "0.8", features = ["std"] }
 
 [dev-dependencies]

@@ -14,7 +14,7 @@
 mod block;
 mod cipher;
 mod key;
-mod round;
+pub mod round;
 mod sbox;
 
 pub use crate::block::Block;

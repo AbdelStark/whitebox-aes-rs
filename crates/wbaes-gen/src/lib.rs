@@ -9,7 +9,9 @@
 #![deny(missing_docs)]
 
 mod affine;
+mod linear;
 mod matrix;
 
 pub use affine::{Affine256, Affine8};
-pub use matrix::{Matrix256, Matrix8};
+pub use linear::{mc_sr_matrix_128, mc_sr_matrix_256};
+pub use matrix::{Matrix128, Matrix256, Matrix8};

@@ -24,3 +24,9 @@
 - Added affine maps (8-bit and 256-bit) with compose/invert/apply helpers and random sparse-unsplit generation.
 - Comprehensive tests for invertibility, roundtrip correctness, sparsity structure, and composition; workspace fmt/clippy/test all green.
 - Next: implement AES linear layers and round encoding scaffolding in `wbaes-gen` (Phase 4).
+
+## 2025-12-09 11:50 UTC
+- Implemented AES linear layer matrices: `MC ∘ SR` for 128-bit and 256-bit states, built via matrix builders from AES core round functions.
+- Added Matrix128 type plus from-linear-transform helpers for 128/256; verified matrix application matches direct AES shift+mix on random states.
+- `wbaes-gen` now depends on `aes-core`; fmt/clippy/tests passing.
+- Next: white-box table generation pipeline, instance struct, and serialization (Phases 5–6).

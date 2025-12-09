@@ -110,6 +110,100 @@ impl Matrix8 {
     }
 }
 
+/// 128×128 binary matrix over GF(2), stored row-major with two `u64` segments per row.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Matrix128 {
+    rows: [[u64; 2]; 128],
+}
+
+impl Matrix128 {
+    /// Returns the zero matrix.
+    pub fn zero() -> Self {
+        Self {
+            rows: [[0u64; 2]; 128],
+        }
+    }
+
+    /// Returns the identity matrix.
+    pub fn identity() -> Self {
+        let mut rows = [[0u64; 2]; 128];
+        for (i, row) in rows.iter_mut().enumerate() {
+            let segment = i / 64;
+            let offset = i % 64;
+            row[segment] |= 1u64 << offset;
+        }
+        Self { rows }
+    }
+
+    fn set_bit(&mut self, row: usize, col: usize, value: bool) {
+        let segment = col / 64;
+        let offset = col % 64;
+        let mask = 1u64 << offset;
+        if value {
+            self.rows[row][segment] |= mask;
+        } else {
+            self.rows[row][segment] &= !mask;
+        }
+    }
+
+    /// Applies the matrix to a 128-bit vector represented as 16 bytes.
+    pub fn apply_to_bytes(&self, input: &[u8; 16]) -> [u8; 16] {
+        let input_segments = bytes128_to_segments(input);
+        let mut output_segments = [0u64; 2];
+
+        for (row_idx, row) in self.rows.iter().enumerate() {
+            let mut acc = 0u32;
+            for seg in 0..2 {
+                acc ^= (row[seg] & input_segments[seg]).count_ones();
+            }
+            if acc & 1 == 1 {
+                let segment = row_idx / 64;
+                let offset = row_idx % 64;
+                output_segments[segment] |= 1u64 << offset;
+            }
+        }
+
+        segments128_to_bytes(&output_segments)
+    }
+
+    /// Multiplies two matrices (`self * rhs`).
+    pub fn mul(&self, rhs: &Self) -> Self {
+        let mut result = Self::zero();
+        for (row_idx, row) in self.rows.iter().enumerate() {
+            let mut accum = [0u64; 2];
+            for (segment_idx, segment) in row.iter().enumerate() {
+                let mut bits = *segment;
+                while bits != 0 {
+                    let bit = bits.trailing_zeros() as usize;
+                    let source_row = segment_idx * 64 + bit;
+                    for (seg_idx, accum_seg) in accum.iter_mut().enumerate() {
+                        *accum_seg ^= rhs.rows[source_row][seg_idx];
+                    }
+                    bits &= bits - 1;
+                }
+            }
+            result.rows[row_idx] = accum;
+        }
+        result
+    }
+
+    /// Builds a matrix from a linear transform applied to 16-byte inputs.
+    pub fn from_linear_transform(transform: impl Fn(&mut [u8; 16])) -> Self {
+        let mut matrix = Self::zero();
+        for col in 0..128 {
+            let mut vector = [0u8; 16];
+            vector[col / 8] = 1u8 << (col % 8);
+            transform(&mut vector);
+            for row in 0..128 {
+                if (vector[row / 8] >> (row % 8)) & 1 == 1 {
+                    matrix.set_bit(row, col, true);
+                }
+            }
+        }
+        matrix
+    }
+}
+
 /// 256×256 binary matrix over GF(2), stored row-major, four `u64` segments per row.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Matrix256 {
@@ -329,6 +423,39 @@ impl Matrix256 {
         }
         map
     }
+
+    /// Builds a matrix from a linear transform applied to 32-byte inputs.
+    pub fn from_linear_transform(transform: impl Fn(&mut [u8; 32])) -> Self {
+        let mut matrix = Self::zero();
+        for col in 0..256 {
+            let mut vector = [0u8; 32];
+            vector[col / 8] = 1u8 << (col % 8);
+            transform(&mut vector);
+            for row in 0..256 {
+                if (vector[row / 8] >> (row % 8)) & 1 == 1 {
+                    matrix.set_bit(row, col, true);
+                }
+            }
+        }
+        matrix
+    }
+}
+
+fn bytes128_to_segments(bytes: &[u8; 16]) -> [u64; 2] {
+    [
+        u64::from_le_bytes(bytes[0..8].try_into().expect("slice length 8")),
+        u64::from_le_bytes(bytes[8..16].try_into().expect("slice length 8")),
+    ]
+}
+
+fn segments128_to_bytes(segments: &[u64; 2]) -> [u8; 16] {
+    let mut out = [0u8; 16];
+    for (idx, segment) in segments.iter().enumerate() {
+        let bytes = segment.to_le_bytes();
+        let start = idx * 8;
+        out[start..start + 8].copy_from_slice(&bytes);
+    }
+    out
 }
 
 fn bytes_to_segments(bytes: &[u8; 32]) -> [u64; 4] {
@@ -446,5 +573,17 @@ mod tests {
             let direct = m.apply_to_bytes(&input);
             assert_eq!(map[value as usize], direct);
         }
+    }
+
+    #[test]
+    fn matrix128_from_linear_transform_identity() {
+        let identity = Matrix128::from_linear_transform(|_| {});
+        assert_eq!(identity, Matrix128::identity());
+    }
+
+    #[test]
+    fn matrix256_from_linear_transform_identity() {
+        let identity = Matrix256::from_linear_transform(|_| {});
+        assert_eq!(identity, Matrix256::identity());
     }
 }
