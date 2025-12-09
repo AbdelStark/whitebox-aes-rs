@@ -24,7 +24,7 @@ cargo run -p wbaes-cli -- gen \
   --out wb.bin
 
 # Encrypt a multiple of 32 bytes
-cargo run -p wbaes-cli -- enc --instance wb.bin --in plain.bin --out ct.bin
+cargo run -p wbaes-cli -- enc --instance wb.bin --input plain.bin --output ct.bin
 
 # Decrypt (only when external output encoding is disabled)
 cargo run -p wbaes-cli -- dec \
