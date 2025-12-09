@@ -36,3 +36,9 @@
 - Implemented instance structs with parameters, external encodings, and bincode serialization; added serde support to affine/matrix types.
 - Generator produces instances with external output encoding folded into round 10; configuration flag controls external encodings (defaults off). Workspace fmt/clippy/tests pass.
 - Next: runtime evaluator and CLI for end-to-end encryption/decryption (Phases 7–8).
+
+## 2025-12-09 12:38 UTC
+- Implemented runtime evaluator executing round tables with external input encoding and validated outputs against AES for random samples.
+- Built CLI with `gen`, `enc`, `dec` (AES-core decrypt, no external output encoding), and `check` commands; supports deterministic seeds.
+- Added CLI/runtime dependencies and passing workspace fmt/clippy/tests (generation-heavy tests included).
+- Next: documentation, examples, CI, and benches per later phases.

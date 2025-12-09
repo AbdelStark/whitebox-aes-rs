@@ -6,6 +6,14 @@ license = "MIT OR Apache-2.0"
 description = "Command-line interface for generating and using white-box AES instances"
 
 [dependencies]
+anyhow = "1"
+aes-core = { path = "../aes-core" }
+clap = { version = "4.5", features = ["derive"] }
+hex = "0.4"
+rand = "0.8"
+rand_chacha = "0.3"
+wbaes-gen = { path = "../wbaes-gen" }
+wbaes-runtime = { path = "../wbaes-runtime" }
 
 [[bin]]
 name = "wbaes"

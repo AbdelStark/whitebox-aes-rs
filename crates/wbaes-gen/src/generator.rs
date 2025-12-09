@@ -2,7 +2,7 @@
 
 use std::convert::TryInto;
 
-use aes_core::{expand_key, sbox, Aes128Key, RoundKeys};
+use aes_core::{expand_key, sbox, Aes128Key};
 use rand::{CryptoRng, RngCore};
 
 use crate::affine::Affine256;
@@ -49,6 +49,9 @@ impl<R: RngCore + CryptoRng> Generator<R> {
         let mc_sr = mc_sr_matrix_256();
         let sr_only = sr_matrix_256();
 
+        let key0_block = duplicate_round_key(round_keys.get(0));
+        let key0_affine = Affine256::new(Matrix256::identity(), key0_block);
+
         let mut a_encodings = Vec::with_capacity(10);
         for _ in 0..10 {
             a_encodings.push(Affine256::random_sparse_unsplit(&mut self.rng));
@@ -64,7 +67,8 @@ impl<R: RngCore + CryptoRng> Generator<R> {
         };
 
         let a1_inv = a_encodings[0].invert().expect("A^(1) should be invertible");
-        let input_encoding = a1_inv.compose(&min_encoding);
+        let min_total = min_encoding.compose(&key0_affine);
+        let input_encoding = a1_inv.compose(&min_total);
 
         let mut rounds: Vec<RoundTables> = Vec::with_capacity(10);
         for r in 0..10 {
@@ -76,13 +80,13 @@ impl<R: RngCore + CryptoRng> Generator<R> {
                 &a_encodings[r + 1]
             };
             let linear_layer = if r == 9 { &sr_only } else { &mc_sr };
+            let round_key_block = duplicate_round_key(round_keys.get(r + 1));
             let round_tables = build_round(
                 &mut self.rng,
-                r,
                 a_curr,
                 next_affine,
                 linear_layer,
-                &round_keys,
+                &round_key_block,
             );
             rounds.push(round_tables);
         }
@@ -104,18 +108,19 @@ impl<R: RngCore + CryptoRng> Generator<R> {
 
 fn build_round<R: RngCore + CryptoRng>(
     rng: &mut R,
-    round_index: usize,
     a_curr: &Affine256,
     next_affine: &Affine256,
     linear_layer: &Matrix256,
-    round_keys: &RoundKeys,
+    round_key_block: &[u8; 32],
 ) -> RoundTables {
     let next_inv = next_affine
         .lin
         .invert()
         .expect("next affine must be invertible");
     let b_lin = next_inv.mul(linear_layer);
-    let b_bias_target = next_inv.apply_to_bytes(&next_affine.bias);
+    let mut b_bias_target = next_inv.apply_to_bytes(&next_affine.bias);
+    let key_contribution = next_inv.apply_to_bytes(round_key_block);
+    xor_in_place(&mut b_bias_target, &key_contribution);
     let b_biases = split_biases(rng, &b_bias_target);
     let b_maps: [Vec<[u8; 32]>; 32] = std::array::from_fn(|i| {
         let map = b_lin.submatrix_byte_map(i);
@@ -124,7 +129,6 @@ fn build_round<R: RngCore + CryptoRng>(
 
     let h_tables: [HTable; 32] = std::array::from_fn(|_| HTable::random(rng));
 
-    let key_bytes = round_keys.get(round_index + 1);
     let mut round_tables = RoundTables::new_zeroed();
 
     for i in 0..32 {
@@ -140,16 +144,10 @@ fn build_round<R: RngCore + CryptoRng>(
         let h_next = &h_tables[(i + 1) % 32];
         let b_map = &b_maps[i];
 
-        let key_byte = if i < 16 {
-            key_bytes[i]
-        } else {
-            key_bytes[i - 16]
-        };
-
         for x in 0u16..=255 {
             for y in 0u16..=255 {
                 let z = block_left.apply(x as u8) ^ block_right.apply(y as u8) ^ a_bias;
-                let t = sbox(z ^ key_byte);
+                let t = sbox(z);
                 let mut value = b_map[t as usize];
                 xor_in_place(&mut value, b_bias);
                 xor_in_place(&mut value, h_i.get(x as u8));
@@ -180,4 +178,11 @@ fn xor_in_place(dst: &mut [u8; 32], src: &[u8; 32]) {
     for (d, s) in dst.iter_mut().zip(src.iter()) {
         *d ^= *s;
     }
+}
+
+fn duplicate_round_key(round_key: &[u8; 16]) -> [u8; 32] {
+    let mut block = [0u8; 32];
+    block[..16].copy_from_slice(round_key);
+    block[16..].copy_from_slice(round_key);
+    block
 }
