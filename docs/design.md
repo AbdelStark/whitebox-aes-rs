@@ -1,6 +1,6 @@
 # whitebox-aes-rs design notes
 
-This document summarizes how the Baek–Cheon–Hong revisited white-box AES scheme maps to the Rust implementation in this repository. The authoritative implementation roadmap remains `.ai/plan.md`.
+This document summarizes how the Baek–Cheon–Hong revisited white-box AES scheme maps to the Rust implementation in this repository. 
 
 ## Goals
 

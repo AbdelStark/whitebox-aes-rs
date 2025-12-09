@@ -7,7 +7,7 @@ Experimental Rust implementation of Baek–Cheon–Hong’s “White-Box AES Imp
 - `wbaes-runtime`: evaluator that executes the generated tables with external encodings.
 - `wbaes-cli`: command-line tool to generate instances, encrypt/decrypt blocks, and verify correctness.
 
-The binding design document is `.ai/plan.md`; see also `docs/design.md` and `docs/whitebox_background.md` for narrative context.
+The binding design document is `docs/design.md` and `docs/whitebox_background.md` for narrative context.
 
 ## Quick start
 
