@@ -7,3 +7,5 @@ description = "Baseline AES-128 implementation for whitebox-aes-rs"
 
 [dependencies]
 
+[dev-dependencies]
+rand = "0.8"

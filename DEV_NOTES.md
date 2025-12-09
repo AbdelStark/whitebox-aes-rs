@@ -12,3 +12,9 @@
 - Added root README stub referencing `.ai/plan.md` and MSRV intent.
 - Ran `cargo fmt`, `cargo clippy --all-targets --all-features --workspace -- -D warnings`, and `cargo test --workspace` (all passing).
 - Next: implement AES-128 core (key schedule and encrypt) with NIST vectors and property tests.
+
+## 2025-12-09 11:34 UTC
+- Implemented full AES-128 core: key expansion, encrypt, decrypt, round transforms, and S-box/inverse tables with public types (`Block`, `Aes128Key`, `RoundKeys`).
+- Added NIST FIPS-197 test vector coverage and random encrypt/decrypt roundtrip tests.
+- Clippy/tests passing across workspace.
+- Next: build GF(2) matrix and affine encoding infrastructure in `wbaes-gen` (Phase 3).
