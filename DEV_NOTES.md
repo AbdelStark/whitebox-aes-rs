@@ -18,3 +18,9 @@
 - Added NIST FIPS-197 test vector coverage and random encrypt/decrypt roundtrip tests.
 - Clippy/tests passing across workspace.
 - Next: build GF(2) matrix and affine encoding infrastructure in `wbaes-gen` (Phase 3).
+
+## 2025-12-09 11:42 UTC
+- Built GF(2) linear algebra for 8×8 and 256×256 matrices with inversion, multiplication, application, sparse unsplit generation, and byte-to-256 maps.
+- Added affine maps (8-bit and 256-bit) with compose/invert/apply helpers and random sparse-unsplit generation.
+- Comprehensive tests for invertibility, roundtrip correctness, sparsity structure, and composition; workspace fmt/clippy/test all green.
+- Next: implement AES linear layers and round encoding scaffolding in `wbaes-gen` (Phase 4).

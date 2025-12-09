@@ -1,12 +1,15 @@
-//! Generator for Baek–Cheon–Hong’s revisited white-box AES instances.
-//! This scaffold will grow to include matrix algebra, affine encodings, and table construction.
+//! White-box AES instance generation primitives.
+//!
+//! This crate provides the linear algebra and affine encoding building blocks
+//! required to construct Baek–Cheon–Hong’s revisited white-box AES scheme. It
+//! focuses on GF(2) matrices, affine maps, and helpers that will later be
+//! composed into full round encodings and lookup tables.
 
 #![forbid(unsafe_code)]
+#![deny(missing_docs)]
 
-/// Placeholder module to keep the crate compiling while implementation proceeds.
-pub mod placeholder {
-    /// Returns a static string to signal the generator crate is wired into the workspace.
-    pub fn hello() -> &'static str {
-        "wbaes-gen scaffold"
-    }
-}
+mod affine;
+mod matrix;
+
+pub use affine::{Affine256, Affine8};
+pub use matrix::{Matrix256, Matrix8};
