@@ -3,7 +3,9 @@
 //! This crate provides the linear algebra and affine encoding building blocks
 //! required to construct Baek–Cheon–Hong’s revisited white-box AES scheme. It
 //! focuses on GF(2) matrices, affine maps, and helpers that will later be
-//! composed into full round encodings and lookup tables.
+//! composed into full round encodings and lookup tables. The goal is fidelity
+//! to the published scheme for research and education; it is not hardened
+//! against side-channel or DCA-style attacks.
 
 #![forbid(unsafe_code)]
 #![deny(missing_docs)]

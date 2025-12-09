@@ -1,33 +1,95 @@
 # whitebox-aes-rs
 
-Experimental Rust implementation of Baek–Cheon–Hong’s “White-Box AES Implementation Revisited” scheme. It provides:
+Rust workspace implementing Baek–Cheon–Hong’s “White-Box AES Implementation Revisited” scheme (two AES-128 blocks with sparse unsplit 256-bit encodings). Built for study and experimentation—not for production key protection.
 
-- `aes-core`: baseline AES-128 with key expansion, encrypt/decrypt, and NIST vector tests.
-- `wbaes-gen`: generator for 2×AES white-box instances using sparse unsplit 256-bit affine encodings and per-round 16→256-bit tables.
-- `wbaes-runtime`: evaluator that executes the generated tables with external encodings.
-- `wbaes-cli`: command-line tool to generate instances, encrypt/decrypt blocks, and verify correctness.
+## Highlights
+- **Clean AES-128 core (`aes-core`)**: key expansion, encrypt/decrypt, NIST vectors.
+- **White-box generator (`wbaes-gen`)**: sparse unsplit affine encodings, per-round 32×16→256-bit tables, mask gadgets, external encodings (optional).
+- **Runtime evaluator (`wbaes-runtime`)**: table execution for 32-byte blocks with external encodings.
+- **CLI (`wbaes-cli`)**: generate instances, encrypt/decrypt, correctness check, and a self-contained demo.
+- **Docs & tooling**: design/background docs, example, Criterion benches, CI (fmt/clippy/test).
 
-The binding design document is `docs/design.md` and `docs/whitebox_background.md` for narrative context.
+## Repository layout
+- `.ai/plan.md` — binding implementation spec.
+- `crates/` — `aes-core`, `wbaes-gen`, `wbaes-runtime`, `wbaes-cli`.
+- `docs/` — `design.md` (mapping scheme→code), `whitebox_background.md` (threat model/context).
+- `examples/basic.rs` — minimal generation/encryption roundtrip.
+- `benches/wbaes_bench.rs` — generation/runtime benchmarks.
+- `.github/workflows/ci.yml` — fmt/clippy/test on stable.
 
-## Quick start
-
+## Quick start (CLI)
 ```bash
+# Generate an instance (no external output encoding by default)
 cargo run -p wbaes-cli -- gen \
   --key-hex 000102030405060708090a0b0c0d0e0f \
   --out wb.bin
 
+# Encrypt a multiple of 32 bytes
 cargo run -p wbaes-cli -- enc --instance wb.bin --in plain.bin --out ct.bin
 
-# Quick demo: generate random key/instance, encrypt random 32B block, and decrypt back
+# Decrypt (only when external output encoding is disabled)
+cargo run -p wbaes-cli -- dec \
+  --instance wb.bin \
+  --key-hex 000102030405060708090a0b0c0d0e0f \
+  --in ct.bin --out pt.bin
+
+# Compare white-box vs AES for random samples
+cargo run -p wbaes-cli -- check \
+  --instance wb.bin \
+  --key-hex 000102030405060708090a0b0c0d0e0f
+
+# Quick demo: generate key/instance, encrypt random 32B, decrypt back
 cargo run -p wbaes-cli -- demo
 ```
 
-`dec` expects instances with no external output encoding (the default): it decrypts with AES-core. `check` compares white-box outputs against two AES encryptions for random samples.
+## Library sketch
+```rust
+use aes_core::{Aes128Key, expand_key, encrypt_block};
+use rand_chacha::ChaCha20Rng;
+use rand::SeedableRng;
+use wbaes_gen::{Generator, GeneratorConfig};
+use wbaes_runtime::WbCipher256;
 
-## Minimum Rust version
+let key = Aes128Key::from([0u8; 16]);
+let mut gen = Generator::with_config(
+    ChaCha20Rng::from_seed([1u8; 32]),
+    GeneratorConfig { external_encodings: false },
+);
+let instance = gen.generate_instance(&key);
+let cipher = WbCipher256::new(instance);
 
-Stable Rust 1.75+ (edition 2021). CI enforces fmt/clippy/test on stable.
+let mut block = [0u8; 32];
+cipher.encrypt_block(&mut block);
+```
 
-## Security disclaimer
+See `examples/basic.rs` for a full AES-consistency check.
 
-Research and educational code only. Classic CEJO/Chow-style and revisited white-box AES constructions are vulnerable to algebraic and DCA-style attacks (e.g., BGE, Baek–Cheon–Hong toolbox). No side-channel hardening is provided. Do not use for production key protection.
+## Design & background
+- Roadmap/spec: `.ai/plan.md`
+- Implementation mapping and data flow: `docs/design.md`
+- Threat model and CEJO/Chow context: `docs/whitebox_background.md`
+
+Key references:
+- S. Chow et al., “White-Box Cryptography and an AES Implementation,” SAC 2002.
+- J. A. Muir, “A Tutorial on White-box AES,” 2013.
+- C. H. Baek, J. H. Cheon, H. Hong, “White-Box AES Implementation Revisited,” JCN 2016 (ePrint 2014/688).
+
+## Security model (please read)
+- **Research/educational only.** Not a secure key-protection mechanism.
+- Vulnerable to known analytic/DCA-style attacks (BGE, Baek–Cheon–Hong toolbox, etc.).
+- No side-channel hardening. External encodings are optional and default off for testability.
+- Treat all keys and tables as sensitive; avoid logging or exposing them.
+
+## Build, test, bench
+- MSRV: stable Rust 1.75+ (edition 2021).
+- CI: fmt, clippy (`-D warnings`), test on stable.
+- Local:
+  - `cargo fmt --all`
+  - `cargo clippy --all-targets --all-features --workspace -- -D warnings`
+  - `cargo test --workspace`
+  - `cargo bench` (Criterion; generation is heavyweight)
+
+## Roadmap
+- Optional parallel table generation feature.
+- CLI integration tests via `assert_cmd`.
+- Publish docs (`cargo doc`) / Pages once stabilized.
