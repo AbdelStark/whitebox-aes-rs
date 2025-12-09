@@ -1,19 +1,30 @@
 # whitebox-aes-rs
 
-Experimental Rust workspace implementing Baek–Cheon–Hong’s “White-Box AES Implementation Revisited” scheme. The project will expose a clean AES-128 core, a white-box instance generator, a runtime evaluator, and a CLI for experimentation.
+Experimental Rust implementation of Baek–Cheon–Hong’s “White-Box AES Implementation Revisited” scheme. It provides:
 
-## Status
+- `aes-core`: baseline AES-128 with key expansion, encrypt/decrypt, and NIST vector tests.
+- `wbaes-gen`: generator for 2×AES white-box instances using sparse unsplit 256-bit affine encodings and per-round 16→256-bit tables.
+- `wbaes-runtime`: evaluator that executes the generated tables with external encodings.
+- `wbaes-cli`: command-line tool to generate instances, encrypt/decrypt blocks, and verify correctness.
 
-Scaffolding is in place; implementation follows the detailed roadmap in `.ai/plan.md`.
+The binding design document is `.ai/plan.md`; see also `docs/design.md` and `docs/whitebox_background.md` for narrative context.
 
-## Design source
+## Quick start
 
-The binding design document is `.ai/plan.md`. All crate structure, APIs, data types, and testing guidance come from that plan. Additional design notes will live in `docs/` as the implementation progresses.
+```bash
+cargo run -p wbaes-cli -- gen \
+  --key-hex 000102030405060708090a0b0c0d0e0f \
+  --out wb.bin
+
+cargo run -p wbaes-cli -- enc --instance wb.bin --in plain.bin --out ct.bin
+```
+
+`dec` expects instances with no external output encoding (the default): it decrypts with AES-core. `check` compares white-box outputs against two AES encryptions for random samples.
 
 ## Minimum Rust version
 
-Targeting stable Rust 1.75+ (edition 2021). CI will enforce MSRV once the code matures.
+Stable Rust 1.75+ (edition 2021). CI enforces fmt/clippy/test on stable.
 
 ## Security disclaimer
 
-This is research and educational code. Classic CEJO/Chow-style white-box AES schemes, including the revisited variant implemented here, are vulnerable to generic algebraic and DCA-style attacks. Do not use this as a secure key-protection mechanism.
+Research and educational code only. Classic CEJO/Chow-style and revisited white-box AES constructions are vulnerable to algebraic and DCA-style attacks (e.g., BGE, Baek–Cheon–Hong toolbox). No side-channel hardening is provided. Do not use for production key protection.

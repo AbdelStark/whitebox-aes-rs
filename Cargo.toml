@@ -11,3 +11,5 @@ resolver = "2"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 
+[workspace.dependencies]
+criterion = "0.5"

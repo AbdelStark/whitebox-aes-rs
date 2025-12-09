@@ -42,3 +42,9 @@
 - Built CLI with `gen`, `enc`, `dec` (AES-core decrypt, no external output encoding), and `check` commands; supports deterministic seeds.
 - Added CLI/runtime dependencies and passing workspace fmt/clippy/tests (generation-heavy tests included).
 - Next: documentation, examples, CI, and benches per later phases.
+
+## 2025-12-09 12:49 UTC
+- Expanded documentation: README quick start and disclaimers, design overview in `docs/design.md`, background in `docs/whitebox_background.md`.
+- Added example (`examples/basic.rs`), Criterion benches scaffold, and GitHub Actions CI (fmt/clippy/test on stable).
+- Benchmarks wired via workspace dependency; fmt/clippy/tests all green post-additions.
+- Next: future work could add parallel generation feature, richer CLI integration tests, and publish docs.

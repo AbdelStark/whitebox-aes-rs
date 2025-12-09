@@ -11,6 +11,8 @@ bincode = "1"
 rand = { version = "0.8", features = ["std"] }
 serde = { version = "1", features = ["derive"] }
 serde-big-array = "0.5"
+criterion = { workspace = true, optional = true }
 
 [dev-dependencies]
 rand_chacha = "0.3"
+criterion = { workspace = true }

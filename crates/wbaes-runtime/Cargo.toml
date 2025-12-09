@@ -8,6 +8,7 @@ description = "Runtime evaluator for white-box AES instances"
 [dependencies]
 wbaes-gen = { path = "../wbaes-gen" }
 aes-core = { path = "../aes-core" }
+criterion = { workspace = true, optional = true }
 
 [dev-dependencies]
 rand = "0.8"
